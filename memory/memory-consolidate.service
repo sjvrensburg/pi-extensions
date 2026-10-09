@@ -1,0 +1,25 @@
+# halo-prep docs/16 step 3: nightly consolidation of pi's long-term memory (@pify/memory,
+# ~/.pi/agent/memory). Commits the day's writes to git, then asks Ornith (:8092,
+# thinking off) to merge duplicates and drop superseded entries, under pify's own
+# refusal rules plus a personal-data check. See memory-consolidate.py.
+#
+# Install:
+#   cp memory-consolidate.service memory-consolidate.timer ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now memory-consolidate.timer
+[Unit]
+Description=Consolidate pi long-term memory
+# A failed run messages Signal (notify-failure@, as the pi-job timers do). A refused
+# proposal is NOT a failure: the script exits 0 and logs why.
+OnFailure=notify-failure@%n.service
+After=network-online.target
+
+[Service]
+Type=oneshot
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+# Called from the repo by absolute path, like marker_run.sh: moving the script
+# breaks this unit.
+ExecStart=/usr/bin/python3 %h/Projects/pi-extensions/memory/memory-consolidate.py
+# One model call on a file of a few KB takes seconds; the script also waits up to
+# 5 min for :8092 after a boot. 20 min ends a hung run.
+TimeoutStartSec=20min

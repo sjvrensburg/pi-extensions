@@ -1,0 +1,5 @@
+node_modules/
+__pycache__/
+*.pyc
+# preflight writes results next to itself; they hold scenario answers, not code
+judge-bench/results-*.json

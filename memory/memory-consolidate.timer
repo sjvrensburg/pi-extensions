@@ -1,0 +1,14 @@
+# halo-prep docs/16 step 3. 03:30: nobody is using :8092's two shared slots (halo-prep docs/16: no
+# daytime background model calls). Persistent=true because the box is shut down,
+# not suspended (pitfall #39): a run missed overnight fires at the next boot, and
+# the script waits for :8092 to come up.
+[Unit]
+Description=Nightly pi memory consolidation
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+Persistent=true
+Unit=memory-consolidate.service
+
+[Install]
+WantedBy=timers.target
