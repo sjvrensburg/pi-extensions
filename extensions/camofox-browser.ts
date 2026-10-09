@@ -2,7 +2,7 @@
 //
 // Replaces Hermes's browser_* tools (halo-prep docs/13 Phase E, 2026-09-24). Camofox is a
 // fingerprint-spoofed Firefox in Docker (halo-prep config/camofox/); this talks to its REST API
-// directly, the same request shapes as ~/Projects/hermes-coffee-tracker/scripts/camofox_client.py.
+// directly, the same request shapes as ~/Projects/coffee-price-tracker/scripts/camofox_client.py.
 //
 // ONE tool with an `action` enum rather than seven tools: each tool definition is prompt text
 // on every request, and the Hermes skill's main rule ("refs go stale after any state change;
