@@ -5,9 +5,10 @@ coupled to them and must not drift apart: the judge's preflight bench and the ni
 consolidation job. Written for one box (the EVO-X3 in `halo-prep`), so every default is that
 box's; each box-specific value has an env override, and at the defaults behaviour is unchanged.
 
-Split out of `halo-prep` at commit `5bec25c` on 2026-10-09; history before that lives there
+Split out of `halo-prep`, the author's private runbook for that box, at commit `5bec25c` on 2026-10-09; history before that lives there
 (`config/pi/extensions/`, `scripts/judge-bench/`, `scripts/memory-consolidate.py`). The
-`halo-prep docs/NN` references in comments point at that repo's `docs/`.
+`halo-prep docs/NN` references in comments point at that repo's `docs/`, which are not public;
+they are kept as provenance.
 
 ## What is here
 
