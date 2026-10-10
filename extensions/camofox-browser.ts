@@ -16,10 +16,6 @@
 // volume (~/.local/share/camofox/profiles). The tab is closed on session shutdown: open tabs
 // accumulating across runs OOM'd this Camofox once (camofox_client.py close()).
 //
-// CAPTCHA and bot-challenge pages (Makro's "Press & Hold") are within reach: `visual_click`
-// can locate and click their controls, so there is no principled prohibition against attempting
-// them any more.
-//
 // `visual_click` (2026-09-27): a vision-grounded fallback for the failure mode `click`/`snapshot`
 // cannot fix -- confirmed, not guessed: the operator's actual complaint on "highly dynamic
 // websites" is a SPARSE accessibility tree (canvas, custom widgets, no ARIA roles), not stale
