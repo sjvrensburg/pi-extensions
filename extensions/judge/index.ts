@@ -65,7 +65,7 @@ function loadConfig(): Config {
 		mode: "active",
 		url: "http://127.0.0.1:8098",
 		backend: "systemone",
-		llmModel: "cybertiel-coder-35b-a3b",
+		llmModel: "gemma4-e4b",
 		// Winnow answers 10 questions in ~0.6 s idle; the margin is for a GPU busy with a
 		// long Ornith prefill. Past this the message goes ahead unjudged.
 		timeoutMs: 2500,
@@ -74,7 +74,10 @@ function loadConfig(): Config {
 		heavyModel: "zai/glm-5.3",
 		// Ornith's models.json map supports only off and medium, so on Ornith light lands on
 		// off and heavy on medium (see pickLevel). Thinking off on the 35B passed the pi tool
-		// harness 9/9 at 2.9 s against 3.8 s on (halo-prep docs/13 Phase 0 results).
+		// harness 9/9 at 2.9 s against 3.8 s on (halo-prep docs/13 Phase 0 results). :8092's
+		// Gemma-4-E4B (2026-10-11) supports only off and high, so chat, light AND standard land on
+		// off there: thinking cost it 8x the time on the tool harness (18.5 s vs 2.2 s) for no
+		// accuracy gain (halo-prep config/llama-ornith.service, GEMMA SWAP).
 		thinking: { chat: "off", light: "low", standard: "medium", heavy: "high" },
 		log: join(homedir(), ".local/share/pi-judge/decisions.jsonl"),
 	};
@@ -548,7 +551,7 @@ export default function judge(pi: ExtensionAPI) {
 				// Turning it on also brings a session that is already on a hosted model home: the
 				// point is that nothing further leaves the box, including the next turn.
 				if (localOnly && ctx.model && !String(ctx.model.provider).startsWith("local-")) {
-					const [prov, ...rest] = (preRouteModel ?? "local-ornith/cybertiel-coder-35b-a3b").split("/");
+					const [prov, ...rest] = (preRouteModel ?? "local-ornith/gemma4-e4b").split("/");
 					const target = ctx.modelRegistry.find(prov, rest.join("/"));
 					try {
 						markOurs();
