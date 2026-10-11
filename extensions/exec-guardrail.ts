@@ -27,10 +27,18 @@
 // fork-bomb/systemctl/pkill rows only -- the Python side delegates rm -rf to Omnigent's own
 // blast_radius, which this side approximates with its own regex instead, per the plan's note on
 // why rm -rf needs a real flag/path parser and this file deliberately doesn't have one).
+//
+// The API key store (since 2026-10-11): the operator's keys left ~/.bashrc for
+// ~/.config/secrets/api.env, handed out per command by obsidian-keys (~/obsidian-desktop). An
+// agent asking that helper or reading the store would get keys it was not started with, so
+// SECRET_PATTERNS refuses agent shell commands naming either, and SECRET_DIR refuses pi's file
+// tools (read/grep/find/ls/edit/write all take `path`) inside it. This is a tripwire, not a wall:
+// `python -c "open(...)"` with the path built from pieces gets past a regex. It is not applied
+// to user_bash: there the operator is asking for their own keys. Same row in exec_guardrail.py.
 import { execFile } from "node:child_process";
-import { appendFileSync, mkdirSync } from "node:fs";
+import { appendFileSync, mkdirSync, realpathSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 const LOG_DIR = join(homedir(), ".local/share/pi-guardrail");
@@ -58,9 +66,31 @@ const DENYLIST: [string, RegExp][] = [
 	["pkill/killall targeting llama-server or pi broadly", /\b(pkill|killall)\b.*(llama-server|-f\s+pi\b)/],
 ];
 
+const SECRET_DIR = join(homedir(), ".config/secrets");
+const SECRET_PATTERNS: [string, RegExp][] = [
+	["a read of the API key store", /\bobsidian-keys\b|\.config\/secrets\b|\bsecret-tool\s+lookup\b/],
+];
+
 function matchDenylist(command: string): string | undefined {
 	for (const [why, re] of DENYLIST) if (re.test(command)) return why;
 	return undefined;
+}
+
+function matchSecrets(command: string): string | undefined {
+	for (const [why, re] of SECRET_PATTERNS) if (re.test(command)) return why;
+	return undefined;
+}
+
+// A file-tool path inside SECRET_DIR, after ~ expansion and (when it exists) symlink resolution.
+function pathInSecrets(raw: unknown, cwd: string): boolean {
+	if (typeof raw !== "string" || !raw) return false;
+	let p = resolve(cwd, raw.replace(/^~(?=\/|$)/, homedir()));
+	try {
+		p = realpathSync(p);
+	} catch {
+		// A path that does not exist yet (write) is checked as given.
+	}
+	return p === SECRET_DIR || p.startsWith(SECRET_DIR + "/");
 }
 
 function logDenial(source: string, command: string, why: string) {
@@ -100,11 +130,15 @@ function block(source: string, command: string, why: string) {
 }
 
 export default function execGuardrail(pi: ExtensionAPI) {
-	pi.on("tool_call", async (event) => {
+	pi.on("tool_call", async (event, ctx) => {
 		try {
-			if (event.toolName !== "bash") return undefined;
+			if (event.toolName !== "bash") {
+				const path = (event.input as any)?.path;
+				if (!pathInSecrets(path, (ctx as any)?.cwd ?? process.cwd())) return undefined;
+				return block(event.toolName, String(path), "a read of the API key store");
+			}
 			const command = String((event.input as any)?.command ?? "");
-			const why = matchDenylist(command);
+			const why = matchDenylist(command) ?? matchSecrets(command);
 			if (!why) return undefined;
 			return block("bash", command, why);
 		} catch {
