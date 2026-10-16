@@ -65,7 +65,7 @@ function loadConfig(): Config {
 		mode: "active",
 		url: "http://127.0.0.1:8098",
 		backend: "systemone",
-		llmModel: "gemma4-e4b",
+		llmModel: "caveowl-35b-a3b",
 		// Winnow answers 10 questions in ~0.6 s idle; the margin is for a GPU busy with a
 		// long Ornith prefill. Past this the message goes ahead unjudged.
 		timeoutMs: 2500,
@@ -551,7 +551,7 @@ export default function judge(pi: ExtensionAPI) {
 				// Turning it on also brings a session that is already on a hosted model home: the
 				// point is that nothing further leaves the box, including the next turn.
 				if (localOnly && ctx.model && !String(ctx.model.provider).startsWith("local-")) {
-					const [prov, ...rest] = (preRouteModel ?? "local-ornith/gemma4-e4b").split("/");
+					const [prov, ...rest] = (preRouteModel ?? "local-ornith/caveowl-35b-a3b").split("/");
 					const target = ctx.modelRegistry.find(prov, rest.join("/"));
 					try {
 						markOurs();
